@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recipes Pocket — demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到内容</a>
+    <header class="site-header" role="banner">
+      <div class="site-header__inner">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+              <path
+                d="M12 3c3 2.5 5 6 5 10a5 5 0 01-10 0c0-4 2-7.5 5-10z"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <path d="M8 16h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </span>
+          <div>
+            <p class="brand__eyebrow">Searea demo</p>
+            <h1 class="brand__title">Recipes Pocket</h1>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="shell">
+      <aside class="rail" aria-label="筛选">
+        <section class="card">
+          <h2 class="card__heading">菜系</h2>
+          <div class="chips" id="cuisine-filters" role="group" aria-label="按菜系筛选">
+            <button type="button" class="chip chip--active cursor-pointer" data-cuisine="">全部</button>
+            <button type="button" class="chip cursor-pointer" data-cuisine="fusion">Fusion</button>
+            <button type="button" class="chip cursor-pointer" data-cuisine="comfort">Comfort</button>
+            <button type="button" class="chip cursor-pointer" data-cuisine="sweet">Sweet</button>
+          </div>
+        </section>
+      </aside>
+
+      <section class="content" aria-labelledby="grid-heading">
+        <div class="content__mast">
+          <h2 id="grid-heading" class="content__title">本周灶火</h2>
+          <p class="muted">REST 只读浏览 — 食材与步骤拆表，展开阅读 story。</p>
+        </div>
+        <div id="recipe-grid" class="grid"></div>
+      </section>
+    </main>
+
+    <dialog id="sheet" class="sheet" aria-labelledby="sheet-title">
+      <div class="sheet__panel" role="document">
+        <header class="sheet__head">
+          <div>
+            <p class="sheet__tag" id="sheet-cuisine"></p>
+            <h2 id="sheet-title"></h2>
+            <p class="muted" id="sheet-sub"></p>
+            <dl class="meta">
+              <div>
+                <dt>
+                  <span class="meta__ico" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" />
+                      <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                  用时
+                </dt>
+                <dd id="sheet-duration">—</dd>
+              </div>
+              <div>
+                <dt>
+                  <span class="meta__ico" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M7 10h10M7 14h10M10 18h4"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                      />
+                      <circle cx="12" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                    </svg>
+                  </span>
+                  份量
+                </dt>
+                <dd id="sheet-servings">—</dd>
+              </div>
+            </dl>
+          </div>
+          <button type="button" class="icon-btn js-close-sheet cursor-pointer" aria-label="关闭详情">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+            </svg>
+          </button>
+        </header>
+        <div class="sheet__hero" id="sheet-hero" aria-hidden="true"></div>
+        <div class="sheet__body prose" id="sheet-story"></div>
+        <div class="sheet__columns">
+          <section aria-labelledby="ing-heading">
+            <h3 id="ing-heading">食材 / 组分</h3>
+            <ul id="sheet-ingredients" class="line-list"></ul>
+          </section>
+          <section aria-labelledby="step-heading">
+            <h3 id="step-heading">步骤</h3>
+            <ol id="sheet-steps" class="line-list line-list--num"></ol>
+          </section>
+        </div>
+      </div>
+    </dialog>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "jsx": "react-jsx",
+    "jsxImportSource": "../src/schema",
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["test/**/*.tsx", "examples/**/*.tsx"]
+}

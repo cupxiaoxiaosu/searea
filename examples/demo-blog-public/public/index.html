@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Shoreline Editorial — demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="masthead__inner">
+        <a class="brand" href="#">
+          <svg class="brand__mark" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
+            <rect x="4" y="4" width="32" height="32" rx="6" fill="var(--accent)" opacity="0.9" />
+            <path
+              d="M12 26V14l6 6 6-6v12"
+              fill="none"
+              stroke="#fff"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span class="brand__text"> Shoreline Editorial </span>
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="hero">
+        <p class="eyebrow">Demo · 只读浏览</p>
+        <h1>慢下来的句子，像在码头等一艘晚点的船。</h1>
+        <p class="lede">
+          轻量 JSX / ORM REST 后端 + 纸本质感排版 — 仅 C 端展示，不支持登录发布。
+        </p>
+      </section>
+
+      <div class="layout">
+        <div id="post-grid" class="grid"></div>
+      </div>
+    </main>
+
+    <dialog id="reader" class="sheet">
+      <article>
+        <button type="button" class="sheet__close js-close-reader" aria-label="关闭">✕</button>
+        <header class="sheet__head">
+          <p class="eyebrow js-d-label"></p>
+          <h1 class="js-d-title"></h1>
+          <p class="muted tiny js-d-meta"></p>
+        </header>
+        <div class="prose js-d-body"></div>
+        <section class="comments">
+          <h3>留言</h3>
+          <ul class="comment-list js-d-comments"></ul>
+        </section>
+      </article>
+    </dialog>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

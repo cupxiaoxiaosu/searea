@@ -1,0 +1,277 @@
+{
+  "keys": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/config/config.default.js",
+  "session": {
+    "maxAge": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-session/config/config.default.js",
+    "key": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-session/config/config.default.js",
+    "httpOnly": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-session/config/config.default.js",
+    "encrypt": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-session/config/config.default.js",
+    "logValue": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-session/config/config.default.js"
+  },
+  "security": {
+    "domainWhiteList": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+    "protocolWhiteList": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+    "defaultMiddleware": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+    "csrf": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "type": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "ignoreJSON": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "useSession": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "cookieName": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "sessionName": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "headerName": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "bodyName": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "queryName": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "rotateWhenInvalid": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "supportedRequests": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "refererWhiteList": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "cookieOptions": {
+        "signed": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+      }
+    },
+    "xframe": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "value": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    },
+    "hsts": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.local.js",
+      "maxAge": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "includeSubdomains": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    },
+    "dta": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    },
+    "methodnoallow": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    },
+    "noopen": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    },
+    "nosniff": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    },
+    "referrerPolicy": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "value": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    },
+    "xssProtection": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "value": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    },
+    "csp": {
+      "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "policy": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    },
+    "ssrf": {
+      "ipBlackList": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "ipExceptionList": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "hostnameExceptionList": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js",
+      "checkAddress": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+    }
+  },
+  "helper": {
+    "shtml": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-security/config/config.default.js"
+  },
+  "jsonp": {
+    "limit": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-jsonp/config/config.default.js",
+    "callback": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-jsonp/config/config.default.js",
+    "csrf": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-jsonp/config/config.default.js"
+  },
+  "onerror": {
+    "errorPageUrl": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-onerror/config/config.default.js",
+    "appErrorFilter": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-onerror/config/config.default.js",
+    "templatePath": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-onerror/config/config.default.js"
+  },
+  "i18n": {
+    "defaultLocale": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-i18n/config/config.default.js",
+    "dirs": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-i18n/config/config.default.js",
+    "queryField": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-i18n/config/config.default.js",
+    "cookieField": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-i18n/config/config.default.js",
+    "cookieDomain": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-i18n/config/config.default.js",
+    "cookieMaxAge": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-i18n/config/config.default.js"
+  },
+  "watcher": {
+    "type": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-watcher/config/config.local.js",
+    "eventSources": {
+      "default": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-watcher/config/config.default.js",
+      "development": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-watcher/config/config.default.js"
+    }
+  },
+  "customLogger": {
+    "scheduleLogger": {
+      "consoleLevel": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-schedule/config/config.default.js",
+      "file": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-schedule/config/config.default.js"
+    }
+  },
+  "schedule": {
+    "directory": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-schedule/config/config.default.js"
+  },
+  "multipart": {
+    "mode": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "autoFields": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "defaultCharset": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "defaultParamCharset": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "fieldNameSize": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "fieldSize": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "fields": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "fileSize": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "files": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "fileExtensions": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "whitelist": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "allowArrayField": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "tmpdir": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+    "cleanSchedule": {
+      "cron": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js",
+      "disable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-multipart/config/config.default.js"
+    }
+  },
+  "development": {
+    "watchDirs": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-development/config/config.default.js",
+    "ignoreDirs": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-development/config/config.default.js",
+    "fastReady": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-development/config/config.default.js",
+    "reloadOnDebug": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-development/config/config.default.js",
+    "overrideDefault": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-development/config/config.default.js",
+    "overrideIgnore": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-development/config/config.default.js"
+  },
+  "logrotator": {
+    "filesRotateByHour": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-logrotator/config/config.default.js",
+    "hourDelimiter": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-logrotator/config/config.default.js",
+    "filesRotateBySize": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-logrotator/config/config.default.js",
+    "maxFileSize": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-logrotator/config/config.default.js",
+    "maxFiles": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-logrotator/config/config.default.js",
+    "rotateDuration": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-logrotator/config/config.default.js",
+    "maxDays": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-logrotator/config/config.default.js"
+  },
+  "static": {
+    "prefix": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-static/config/config.default.js",
+    "dir": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-static/config/config.default.js",
+    "dynamic": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-static/config/config.default.js",
+    "preload": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-static/config/config.default.js",
+    "buffer": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-static/config/config.default.js",
+    "maxFiles": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-static/config/config.default.js"
+  },
+  "view": {
+    "root": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-view/config/config.default.js",
+    "cache": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-view/config/config.local.js",
+    "defaultExtension": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-view/config/config.default.js",
+    "defaultViewEngine": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-view/config/config.default.js",
+    "mapping": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg-view/config/config.default.js"
+  },
+  "env": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "name": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "cookies": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "proxy": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "maxIpsCount": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "maxProxyCount": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "protocolHeaders": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "ipHeaders": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "hostHeaders": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "pkg": {
+    "name": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "private": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "type": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "scripts": {
+      "start": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+    },
+    "dependencies": {
+      "egg": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "searea": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+    }
+  },
+  "baseDir": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "HOME": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "rundir": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "dump": {
+    "ignore": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "timing": {
+      "slowBootActionMinDuration": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+    }
+  },
+  "confusedConfigurations": {
+    "bodyparser": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "notFound": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "sitefile": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "middlewares": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "httpClient": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+  },
+  "notfound": {
+    "pageUrl": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+  },
+  "siteFile": {
+    "/favicon.ico": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "cacheControl": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+  },
+  "bodyParser": {
+    "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "encoding": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "formLimit": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "jsonLimit": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "textLimit": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "strict": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "queryString": {
+      "arrayLimit": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "depth": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "parameterLimit": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+    },
+    "onerror": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+  },
+  "logger": {
+    "dir": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "encoding": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "env": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "level": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "consoleLevel": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "disableConsoleAfterReady": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "outputJSON": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "buffer": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "appLogName": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "coreLogName": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "agentLogName": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "errorLogName": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "coreLogger": {
+      "consoleLevel": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.local.js"
+    },
+    "allowDebugAtProd": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "enablePerformanceTimer": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "enableFastContextLogger": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+  },
+  "httpclient": {
+    "enableDNSCache": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "dnsCacheLookupInterval": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "dnsCacheMaxLength": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "request": {
+      "timeout": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+    },
+    "httpAgent": {
+      "keepAlive": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "freeSocketTimeout": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "maxSockets": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "maxFreeSockets": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+    },
+    "httpsAgent": {
+      "keepAlive": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "freeSocketTimeout": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "maxSockets": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "maxFreeSockets": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+    },
+    "useHttpClientNext": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+  },
+  "meta": {
+    "enable": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "logging": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+  },
+  "coreMiddleware": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "workerStartTimeout": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "serverTimeout": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+  "cluster": {
+    "listen": {
+      "path": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "port": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+      "hostname": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+    }
+  },
+  "clusterClient": {
+    "maxWaitTime": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js",
+    "responseTimeout": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+  },
+  "onClientError": "/Users/surui/Desktop/codes/django-for-js/examples/egg-campus/node_modules/egg/config/config.default.js"
+}

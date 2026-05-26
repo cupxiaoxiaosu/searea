@@ -1,0 +1,31 @@
+# Dependencies & build output
+node_modules
+**/node_modules
+dist
+**/dist
+
+# Lock files
+package-lock.json
+**/package-lock.json
+
+# Local data & secrets
+*.sqlite3
+examples/demo-blog-public/demo-blog.sqlite3
+examples/demo-recipes-pocket/demo-recipes.sqlite3
+src/frontend/package-lock.json
+.env
+.env.*
+!.env.example
+
+# Repo-only
+docs
+.git
+.github
+.cursor
+.idea
+.DS_Store
+*.log
+tsconfig.json
+
+# Example dev artifacts
+examples/tutorials/egg-campus/run

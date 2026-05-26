@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Builds & tooling
+dist/
+*.tsbuildinfo
+
+# Logs & debug
+logs/
+*.log
+npm-debug.log*
+docs
+# SQLite / local DB from examples & tests
+*.sqlite3
+
+# Env
+.env
+.env.*
+!.env.example
+
+# OS / IDE (keep machine-specific junk out of git)
+.DS_Store
+.idea/
+
+# Cursor (local agent state — do not publish)
+.cursor/
