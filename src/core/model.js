@@ -1,9 +1,23 @@
 import { validateModelInitConfig, validateRestEvents } from "./validate.js";
-import { Manager, ReverseManager, installReverseAccessor, resolveReverseAccessorName } from "./manager.js";
+import { Manager, ReverseManager, ManyToManyManager, installReverseAccessor, resolveReverseAccessorName } from "./manager.js";
 import { QuerySet } from "./queryset.js";
 
 /** FK 标量 id（与 `school` 等访问器并存，不占用同名 own property） */
 const fkIds = Symbol("fkIds");
+
+function singularize(table) {
+  const s = String(table ?? "");
+  if (s.length > 3 && s.endsWith("ies")) return `${s.slice(0, -3)}y`;
+  if (s.length > 1 && s.endsWith("s")) return s.slice(0, -1);
+  return s;
+}
+
+function inferThroughField(Through, Related, fallbackName) {
+  const matches = Object.entries(Through.fields ?? {})
+    .filter(([, def]) => def?.type === "fk" && def.relatedModel === Related)
+    .map(([name]) => name);
+  return matches[0] ?? fallbackName;
+}
 
 /**
  * 把查询参数或 opts.expand 统一成 FK 字段名列表（去空白、去空段）。
@@ -34,6 +48,9 @@ function applyIncomingAttrs(instance, attrs) {
       if (v === undefined) continue;
       // 允许传入关联实例或标量 id
       (instance[fkIds] ??= {})[key] = v && typeof v === "object" ? v.id : v;
+      continue;
+    }
+    if (def?.type === "m2m") {
       continue;
     }
 
@@ -98,6 +115,46 @@ class Model {
     // FK: `instance.school` is a Promise (no ORM-side cache); `await instance.school` loads by id.
     // Reverse: e.g. `school.student_set` (default from table `students` → `student_set`)
     for (const [name, def] of Object.entries(fields)) {
+      if (def?.type === "m2m") {
+        const relatedModel = def.relatedModel;
+        if (!relatedModel) {
+          throw new Error(`M2M field "${name}" requires relatedModel`);
+        }
+        const sourceFieldName = def.sourceField ?? singularize(this.table);
+        const targetFieldName = def.targetField ?? singularize(relatedModel.table);
+        let throughModel = def.through;
+        if (!throughModel) {
+          class AutoThroughModel extends Model {}
+          await AutoThroughModel.init({
+            table: def.throughTable ?? `${singularize(this.table)}_${name}`,
+            fields: {
+              id: { type: "number", primaryKey: true },
+              [sourceFieldName]: { type: "fk", relatedModel: this, relatedName: "+" },
+              [targetFieldName]: { type: "fk", relatedModel: relatedModel, relatedName: "+" },
+            },
+            db: this.db,
+          });
+          throughModel = AutoThroughModel;
+        }
+        def.throughModel = throughModel;
+        def.sourceFieldName = def.sourceField ?? inferThroughField(throughModel, this, sourceFieldName);
+        def.targetFieldName = def.targetField ?? inferThroughField(throughModel, relatedModel, targetFieldName);
+
+        Object.defineProperty(this.prototype, name, {
+          configurable: true,
+          enumerable: true,
+          get() {
+            return new ManyToManyManager(this, {
+              relatedModel,
+              throughModel,
+              sourceFieldName: def.sourceFieldName,
+              targetFieldName: def.targetFieldName,
+            });
+          },
+        });
+        continue;
+      }
+
       if (def?.type !== "fk") continue;
       const relatedModel = def.relatedModel;
       if (!relatedModel) {
@@ -145,7 +202,13 @@ class Model {
         .filter(([, d]) => d?.type === "fk")
         .map(([name]) => name)
     );
-    const expandMatched = expandCandidates.filter((name) => fkNames.has(name));
+    const relationNames = new Set([
+      ...fkNames,
+      ...Object.entries(fields)
+        .filter(([, d]) => d?.type === "m2m")
+        .map(([name]) => name),
+    ]);
+    const expandMatched = expandCandidates.filter((name) => relationNames.has(name));
     const effectiveExpand = expandMatched.length > 0 ? new Set(expandMatched) : null;
 
     const out = {};
@@ -198,6 +261,31 @@ class Model {
         }
         continue;
       }
+      if (def?.type === "m2m") {
+        const manager = instance[k];
+        const relatedRows = await manager.all();
+        const ids = relatedRows.map((row) => row.id);
+
+        if (effectiveExpand != null) {
+          if (!effectiveExpand.has(k)) {
+            out[`${k}_ids`] = ids;
+            continue;
+          }
+          out[k] = await Promise.all(
+            relatedRows.map((row) => def.relatedModel.serialize(row, { fkDepth: 0, expand: expandCandidates }))
+          );
+          continue;
+        }
+
+        if (fkDepth > 0) {
+          out[k] = await Promise.all(
+            relatedRows.map((row) => def.relatedModel.serialize(row, { fkDepth: fkDepth - 1 }))
+          );
+        } else {
+          out[`${k}_ids`] = ids;
+        }
+        continue;
+      }
       if (instance[k] !== undefined) out[k] = instance[k];
     }
     if (instance.id !== undefined) out.id = instance.id;
@@ -205,5 +293,5 @@ class Model {
   }
 }
 
-export { Model, Manager, QuerySet, ReverseManager };
+export { Model, Manager, QuerySet, ReverseManager, ManyToManyManager };
 export default Model;

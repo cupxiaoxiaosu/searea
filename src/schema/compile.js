@@ -113,6 +113,36 @@ function compileField(f, modelsByTable, tableName) {
     return out;
   }
 
+  if (fieldKind === "manyToMany") {
+    /** @type {import("../core/model.js").default | undefined} */
+    let related = undefined;
+
+    if (typeof f.relatedTable === "string" && f.relatedTable) {
+      related = modelsByTable[f.relatedTable];
+      if (!related) {
+        throw new Error(
+          `<Table name="${tableName}"> ManyToManyField "${name}": unknown relatedTable "${f.relatedTable}" (define <Table name="${f.relatedTable}"> earlier, or check spelling)`,
+        );
+      }
+    } else if (typeof f.relatedModel === "function") {
+      related = f.relatedModel();
+      if (!related || typeof related !== "function" || !related.fields) {
+        throw new Error(
+          `<Table name="${tableName}"> ManyToManyField "${name}": relatedModel() must return a Model class`,
+        );
+      }
+    } else {
+      throw new Error(`<Table name="${tableName}"> ManyToManyField "${name}": relatedTable or relatedModel is required`);
+    }
+
+    /** @type {Record<string, unknown>} */
+    const out = { type: "m2m", relatedModel: related };
+    if (typeof f.through === "function") out.through = f.through;
+    if (typeof f.throughTable === "string" && f.throughTable) out.throughTable = f.throughTable;
+    applyStandardFieldProps(f, out);
+    return out;
+  }
+
   throw new Error(`Unknown field kind "${fieldKind}"`);
 }
 

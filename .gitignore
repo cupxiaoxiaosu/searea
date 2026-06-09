@@ -2,7 +2,7 @@
 node_modules/
 
 # Builds & tooling
-dist/
+
 *.tsbuildinfo
 
 # Logs & debug

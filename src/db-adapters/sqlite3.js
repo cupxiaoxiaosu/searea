@@ -3,7 +3,7 @@ import path from "node:path";
 
 import sqlite3 from "sqlite3";
 
-import { buildWhere, createFieldToSqlMapper, resolveSqlLogger } from "./_common.js";
+import { createAdapterMethods, createCrudMethods, createFieldToSqlMapper, resolveSqlLogger } from "./_common.js";
 
 function quoteIdent(name) {
   // Minimal identifier quoting for SQLite.
@@ -75,111 +75,28 @@ export function createSqlite3Adaptor(opts = {}) {
     });
   };
 
-  async function ensureTable(modelClass) {
-    const table = modelClass.table;
-    const fields = modelClass.fields ?? {};
-    if (!table) throw new Error("Model.table is required");
+  const crud = createCrudMethods({
+    quoteIdent,
+    mapFieldToSql,
+    exec,
+    get,
+    all,
+    run,
+    emptyInsertSql: (quotedTable) => `INSERT INTO ${quotedTable} DEFAULT VALUES`,
+    formatInsertResult: (res, attrs) => ({ ...attrs, id: res.lastID }),
+    updateChangeCount: (res) => res.changes,
+    deleteChangeCount: (res) => res.changes,
+  });
 
-    const columnsSql = Object.entries(fields).map(([name, def]) => {
-      return `${quoteIdent(name)} ${mapFieldToSql(def)}`;
-    });
-
-    if (columnsSql.length === 0) {
-      throw new Error(`Model ${modelClass.name} must define at least 1 field`);
-    }
-
-    await exec(
-      `CREATE TABLE IF NOT EXISTS ${quoteIdent(table)} (${columnsSql.join(", ")})`
-    );
-  }
-
-  return {
+  return createAdapterMethods({
     dialect: "sqlite",
-    async close() {
+    close: async () => {
       await new Promise((resolve, reject) => db.close((e) => (e ? reject(e) : resolve())));
     },
-
-    async rawGet(sql, params = []) {
-      return await get(sql, params);
-    },
-
-    async rawAll(sql, params = []) {
-      return await all(sql, params);
-    },
-
-    async exec(sql) {
-      await exec(sql);
-    },
-
-    ensureTable,
-
-    async insert(table, attrs) {
-      const keys = Object.keys(attrs);
-      if (keys.length === 0) {
-        const res = await run(`INSERT INTO ${quoteIdent(table)} DEFAULT VALUES`);
-        return { id: res.lastID };
-      }
-
-      const cols = keys.map(quoteIdent).join(", ");
-      const placeholders = keys.map(() => "?").join(", ");
-      const params = keys.map((k) => attrs[k]);
-      const res = await run(`INSERT INTO ${quoteIdent(table)} (${cols}) VALUES (${placeholders})`, params);
-      return { ...attrs, id: res.lastID };
-    },
-
-    async select(table, where = {}, { limit, offset } = {}) {
-      const w = buildWhere(quoteIdent, where);
-      let sql = `SELECT * FROM ${quoteIdent(table)} ${w.sql}`;
-      if (typeof limit === "number") sql += ` LIMIT ${limit}`;
-      if (typeof offset === "number") sql += ` OFFSET ${offset}`;
-      return await all(sql, w.params);
-    },
-
-    async count(table, where = {}) {
-      const w = buildWhere(quoteIdent, where);
-      const row = await get(`SELECT COUNT(*) AS cnt FROM ${quoteIdent(table)} ${w.sql}`, w.params);
-      return Number(row?.cnt ?? 0);
-    },
-
-    async sum(table, column, where = {}) {
-      const w = buildWhere(quoteIdent, where);
-      const row = await get(
-        `SELECT SUM(${quoteIdent(column)}) AS agg FROM ${quoteIdent(table)} ${w.sql}`,
-        w.params
-      );
-      const v = row?.agg;
-      if (v == null) return null;
-      return Number(v);
-    },
-
-    async avg(table, column, where = {}) {
-      const w = buildWhere(quoteIdent, where);
-      const row = await get(
-        `SELECT AVG(${quoteIdent(column)}) AS agg FROM ${quoteIdent(table)} ${w.sql}`,
-        w.params
-      );
-      const v = row?.agg;
-      if (v == null) return null;
-      return Number(v);
-    },
-
-    async update(table, where, attrs) {
-      const setKeys = Object.keys(attrs);
-      const setSql = setKeys.map((k) => `${quoteIdent(k)} = ?`).join(", ");
-      const setParams = setKeys.map((k) => attrs[k]);
-      const w = buildWhere(quoteIdent, where);
-      const res = await run(
-        `UPDATE ${quoteIdent(table)} SET ${setSql} ${w.sql}`,
-        [...setParams, ...w.params]
-      );
-      return res.changes;
-    },
-
-    async delete(table, where) {
-      const w = buildWhere(quoteIdent, where);
-      const res = await run(`DELETE FROM ${quoteIdent(table)} ${w.sql}`, w.params);
-      return res.changes;
-    },
-  };
+    get,
+    all,
+    exec,
+    crud,
+  });
 }
 

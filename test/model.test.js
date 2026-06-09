@@ -356,6 +356,57 @@ test("foreign keys accept model instances or scalar ids and serialize null safel
   });
 });
 
+test("m2m fields auto-create a through table and expose a relation manager", async () => {
+  await withDb(async (db) => {
+    const Hobby = await Model.define({
+      table: "hobbies",
+      fields: {
+        id: { type: "number", primaryKey: true },
+        name: { type: "char", max_length: 255 },
+      },
+    });
+    const Student = await Model.define({
+      table: "students",
+      fields: {
+        id: { type: "number", primaryKey: true },
+        name: { type: "char", max_length: 255 },
+        hobbies: { type: "m2m", relatedModel: Hobby },
+      },
+    });
+
+    await db.ensureTable(Hobby);
+    await db.ensureTable(Student);
+
+    const reading = await Hobby.objects.create({ name: "Reading" });
+    const chess = await Hobby.objects.create({ name: "Chess" });
+    const student = await Student.objects.create({ name: "Alice" });
+
+    await student.hobbies.add(reading, chess.id);
+    assert.deepEqual(
+      (await student.hobbies.all()).map((h) => h.name).sort(),
+      ["Chess", "Reading"]
+    );
+
+    const flat = await Student.serialize(student, { fkDepth: 0 });
+    assert.deepEqual(flat.hobbies_ids.sort((a, b) => a - b), [reading.id, chess.id]);
+
+    const expanded = await Student.serialize(student, { expand: "hobbies" });
+    assert.deepEqual(
+      expanded.hobbies.map((h) => h.name).sort(),
+      ["Chess", "Reading"]
+    );
+
+    await student.hobbies.remove(reading);
+    assert.deepEqual((await student.hobbies.all()).map((h) => h.name), ["Chess"]);
+
+    await student.hobbies.set([reading]);
+    assert.deepEqual((await student.hobbies.all()).map((h) => h.name), ["Reading"]);
+
+    await student.hobbies.clear();
+    assert.equal((await student.hobbies.all()).length, 0);
+  });
+});
+
 test("values() expands FK depth and supports selective expand as string or array", async () => {
   await withDb(async (db) => {
     const models = await defineSchoolModels(db);

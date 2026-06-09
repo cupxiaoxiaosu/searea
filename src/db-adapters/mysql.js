@@ -1,6 +1,6 @@
 import mysql from "mysql2/promise";
 
-import { buildWhere, createFieldToSqlMapper, resolveSqlLogger } from "./_common.js";
+import { createAdapterMethods, createCrudMethods, createFieldToSqlMapper, resolveSqlLogger } from "./_common.js";
 
 function quoteIdent(name) {
   return `\`${String(name).replaceAll("`", "``")}\``;
@@ -120,32 +120,41 @@ export function createMysqlAdaptor(opts = {}) {
     return rows;
   }
 
-  async function execSql(sql) {
+  async function exec(sql) {
     log?.(sql, []);
     const pool = await getPool();
     await pool.query(sql);
   }
 
-  async function ensureTable(modelClass) {
-    const table = modelClass.table;
-    const fields = modelClass.fields ?? {};
-    if (!table) throw new Error("Model.table is required");
+  const get = async (sql, params = []) => {
+    const rows = await query(sql, params);
+    return Array.isArray(rows) ? (rows[0] ?? null) : null;
+  };
+  const all = async (sql, params = []) => {
+    const rows = await query(sql, params);
+    return Array.isArray(rows) ? rows : [];
+  };
+  const crud = createCrudMethods({
+    quoteIdent,
+    mapFieldToSql,
+    exec,
+    get,
+    all,
+    run: query,
+    emptyInsertSql: (quotedTable) => `INSERT INTO ${quotedTable} () VALUES ()`,
+    createTableSuffix: " ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+    formatInsertResult: (res, attrs) => {
+      const insertId = res && typeof res === "object" && "insertId" in res ? res.insertId : null;
+      if (insertId == null) return { ...attrs };
+      return { ...attrs, id: insertId };
+    },
+    updateChangeCount: (res) => Number(res?.affectedRows ?? 0),
+    deleteChangeCount: (res) => Number(res?.affectedRows ?? 0),
+  });
 
-    const columnsSql = Object.entries(fields).map(([name, def]) => {
-      return `${quoteIdent(name)} ${mapFieldToSql(def)}`;
-    });
-    if (columnsSql.length === 0) {
-      throw new Error(`Model ${modelClass.name} must define at least 1 field`);
-    }
-
-    await execSql(
-      `CREATE TABLE IF NOT EXISTS ${quoteIdent(table)} (${columnsSql.join(", ")}) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`
-    );
-  }
-
-  return {
+  return createAdapterMethods({
     dialect: "mysql",
-    async close() {
+    close: async () => {
       if (!poolPromise) return;
       try {
         const pool = await poolPromise;
@@ -156,93 +165,10 @@ export function createMysqlAdaptor(opts = {}) {
         poolPromise = null;
       }
     },
-
-    async rawGet(sql, params = []) {
-      const rows = await query(sql, params);
-      return Array.isArray(rows) ? (rows[0] ?? null) : null;
-    },
-
-    async rawAll(sql, params = []) {
-      const rows = await query(sql, params);
-      return Array.isArray(rows) ? rows : [];
-    },
-
-    async exec(sql) {
-      await execSql(sql);
-    },
-
-    ensureTable,
-
-    async insert(table, attrs) {
-      const keys = Object.keys(attrs);
-      if (keys.length === 0) {
-        const res = await query(`INSERT INTO ${quoteIdent(table)} () VALUES ()`);
-        const insertId = res && typeof res === "object" && "insertId" in res ? res.insertId : null;
-        return insertId == null ? {} : { id: insertId };
-      }
-
-      const cols = keys.map(quoteIdent).join(", ");
-      const placeholders = keys.map(() => "?").join(", ");
-      const params = keys.map((k) => attrs[k]);
-
-      const res = await query(`INSERT INTO ${quoteIdent(table)} (${cols}) VALUES (${placeholders})`, params);
-      const insertId = res && typeof res === "object" && "insertId" in res ? res.insertId : null;
-      if (insertId == null) return { ...attrs };
-      return { ...attrs, id: insertId };
-    },
-
-    async select(table, where = {}, { limit, offset } = {}) {
-      const w = buildWhere(quoteIdent, where);
-      let sql = `SELECT * FROM ${quoteIdent(table)} ${w.sql}`;
-      if (typeof limit === "number") sql += ` LIMIT ${limit}`;
-      if (typeof offset === "number") sql += ` OFFSET ${offset}`;
-      return await this.rawAll(sql, w.params);
-    },
-
-    async count(table, where = {}) {
-      const w = buildWhere(quoteIdent, where);
-      const row = await this.rawGet(`SELECT COUNT(*) AS cnt FROM ${quoteIdent(table)} ${w.sql}`, w.params);
-      return Number(row?.cnt ?? 0);
-    },
-
-    async sum(table, column, where = {}) {
-      const w = buildWhere(quoteIdent, where);
-      const row = await this.rawGet(
-        `SELECT SUM(${quoteIdent(column)}) AS agg FROM ${quoteIdent(table)} ${w.sql}`,
-        w.params
-      );
-      const v = row?.agg;
-      if (v == null) return null;
-      return Number(v);
-    },
-
-    async avg(table, column, where = {}) {
-      const w = buildWhere(quoteIdent, where);
-      const row = await this.rawGet(
-        `SELECT AVG(${quoteIdent(column)}) AS agg FROM ${quoteIdent(table)} ${w.sql}`,
-        w.params
-      );
-      const v = row?.agg;
-      if (v == null) return null;
-      return Number(v);
-    },
-
-    async update(table, where, attrs) {
-      const setKeys = Object.keys(attrs);
-      const setSql = setKeys.map((k) => `${quoteIdent(k)} = ?`).join(", ");
-      const setParams = setKeys.map((k) => attrs[k]);
-      const w = buildWhere(quoteIdent, where);
-      const res = await query(
-        `UPDATE ${quoteIdent(table)} SET ${setSql} ${w.sql}`,
-        [...setParams, ...w.params]
-      );
-      return Number(res?.affectedRows ?? 0);
-    },
-
-    async delete(table, where) {
-      const w = buildWhere(quoteIdent, where);
-      const res = await query(`DELETE FROM ${quoteIdent(table)} ${w.sql}`, w.params);
-      return Number(res?.affectedRows ?? 0);
-    },
-  };
+    get,
+    all,
+    exec,
+    crud,
+  });
 }
+

@@ -61,6 +61,22 @@ export function validateWriteAttrs(modelClass, attrs) {
 
     const v = raw;
 
+    if (def.type === "m2m") {
+      const arr = Array.isArray(v) ? v : [v];
+      for (const item of arr) {
+        const id = item && typeof item === "object" ? item.id : item;
+        if (typeof id !== "number" || !Number.isFinite(id)) {
+          details.push({
+            field: key,
+            code: "invalid_relation",
+            message: "Value must be a related id or an array of related ids.",
+          });
+          break;
+        }
+      }
+      continue;
+    }
+
     if (def._choiceSet) {
       let inSet = false;
       if (def.type === "number") {

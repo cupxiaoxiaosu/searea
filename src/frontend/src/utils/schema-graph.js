@@ -4,6 +4,9 @@
  * @returns {string}
  */
 export function singularize(table) {
+  if (table.length > 3 && table.endsWith("ies")) {
+    return `${table.slice(0, -3)}y`;
+  }
   if (table.length > 1 && table.endsWith("s")) {
     return table.slice(0, -1);
   }

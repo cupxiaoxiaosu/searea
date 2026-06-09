@@ -25,6 +25,7 @@ app.use(bodyParser());
 app.use(
   await createKoaRestMiddleware({
     models,
+    adminPath: '/my-admin-site2'
   })
 );
 

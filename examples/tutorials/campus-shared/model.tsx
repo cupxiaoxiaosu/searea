@@ -8,6 +8,7 @@ import {
   TextField,
   IntegerField,
   ForeignKey,
+  ManyToManyField,
   Manager,
 } from "searea";
 
@@ -122,6 +123,14 @@ const App = () => (
     </Table>
 
     <Table
+      name="hobbies"
+      admin={{ label: "爱好", display_field: "name", app: "campus", order: 6 }}
+    >
+      <IntegerField name="id" primaryKey />
+      <CharField name="name" maxLength={128} />
+    </Table>
+
+    <Table
       name="students"
       admin={{ label: "学生", display_field: "name", app: "campus", order: 4 }}
       managers={{ minors: MinorStudentManager }}
@@ -164,6 +173,7 @@ const App = () => (
       <CharField name="sex" maxLength={8} null defaultValue="男" />
       <ForeignKey name="school" relatedTable="schools" />
       <ForeignKey name="teacher" relatedTable="teachers" null />
+      <ManyToManyField name="hobbies" relatedTable="hobbies" label="爱好" />
     </Table>
   </Database>
 );

@@ -35,6 +35,16 @@ function fieldMetaEntry(fname, def, modelsMap, catalogByKey) {
       label: fname,
     };
   }
+  if (def?.type === "m2m") {
+    const Related = def.relatedModel;
+    const targetKey = resourceKeyForClass(modelsMap, Related);
+    return {
+      kind: "many_to_many",
+      target: targetKey,
+      through: def.throughModel?.table,
+      label: fname,
+    };
+  }
   if (def?.type === "number") {
     /** @type {Record<string, unknown>} */
     const entry = { kind: "integer", label: fname };
@@ -80,6 +90,14 @@ export function buildReverseRelations(resourceKey, ModelClass, modelsMap, catalo
         out.push({
           sourceTable: otherKey,
           fkField: fname,
+          label: catalogByKey[otherKey]?.admin?.label ?? otherKey,
+        });
+      }
+      if (fdef?.type === "m2m" && fdef.relatedModel === ModelClass) {
+        out.push({
+          sourceTable: otherKey,
+          fkField: fname,
+          kind: "many_to_many",
           label: catalogByKey[otherKey]?.admin?.label ?? otherKey,
         });
       }
@@ -261,5 +279,25 @@ export function coerceFilterValue(ModelClass, fieldName, raw) {
 export function fkFieldNames(ModelClass) {
   return Object.entries(ModelClass.fields ?? {})
     .filter(([, d]) => d?.type === "fk")
+    .map(([n]) => n);
+}
+
+/**
+ * @param {typeof import("../../core/model.js").Model} ModelClass
+ * @returns {string[]}
+ */
+export function relationFieldNames(ModelClass) {
+  return Object.entries(ModelClass.fields ?? {})
+    .filter(([, d]) => d?.type === "fk" || d?.type === "m2m")
+    .map(([n]) => n);
+}
+
+/**
+ * @param {typeof import("../../core/model.js").Model} ModelClass
+ * @returns {string[]}
+ */
+export function writableColumnFieldNames(ModelClass) {
+  return Object.entries(ModelClass.fields ?? {})
+    .filter(([, d]) => d?.type !== "m2m")
     .map(([n]) => n);
 }

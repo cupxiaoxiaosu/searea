@@ -216,9 +216,11 @@ async function actualColumns(db, table) {
 }
 
 function diffOneTable({ resourceKey, ModelClass, actual, exists, dialect }) {
-  const expected = Object.entries(ModelClass.fields ?? {}).map(([name, def]) =>
-    expectedColumnFromFieldDialect(name, def, dialect || "sqlite")
-  );
+  const expected = Object.entries(ModelClass.fields ?? {})
+    .filter(([, def]) => def?.type !== "m2m")
+    .map(([name, def]) =>
+      expectedColumnFromFieldDialect(name, def, dialect || "sqlite")
+    );
   // Missing table: report table-level absence only.
   // Field-level diffs should run after table exists.
   if (!exists) {
@@ -296,7 +298,19 @@ function diffOneTable({ resourceKey, ModelClass, actual, exists, dialect }) {
 
 export async function computeSchemaDiff({ models, db }) {
   const tables = [];
+  const entries = [];
+  const seenTables = new Set();
   for (const [resourceKey, ModelClass] of Object.entries(models ?? {})) {
+    entries.push([resourceKey, ModelClass]);
+    seenTables.add(ModelClass.table);
+    for (const [fieldName, def] of Object.entries(ModelClass.fields ?? {})) {
+      if (def?.type === "m2m" && def.throughModel && !seenTables.has(def.throughModel.table)) {
+        entries.push([`${resourceKey}.${fieldName}`, def.throughModel]);
+        seenTables.add(def.throughModel.table);
+      }
+    }
+  }
+  for (const [resourceKey, ModelClass] of entries) {
     const table = ModelClass.table;
     const ex = await tableExists(db, table);
     const actual = ex.exists ? await actualColumns(db, table) : [];

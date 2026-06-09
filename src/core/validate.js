@@ -175,7 +175,7 @@ export function validateRestEvents(raw, label = "events") {
 }
 
 function validateFields(fields) {
-  const allowedTypes = new Set(["number", "fk", "char", "text", "date", "datetime"]);
+  const allowedTypes = new Set(["number", "fk", "m2m", "char", "text", "date", "datetime"]);
 
   for (const [name, def] of Object.entries(fields)) {
     const type = def?.type;
@@ -189,6 +189,12 @@ function validateFields(fields) {
       if (typeof maxLength !== "number" || !Number.isFinite(maxLength) || maxLength <= 0) {
         throw new Error(`Field "${name}" with type "char" requires a positive max_length`);
       }
+    }
+    if ((type === "fk" || type === "m2m") && typeof def?.relatedModel !== "function") {
+      throw new Error(`Field "${name}" with type "${type}" requires relatedModel`);
+    }
+    if (type === "m2m" && def?.through !== undefined && typeof def.through !== "function") {
+      throw new Error(`Field "${name}" with type "m2m": through must be a Model class`);
     }
     compilePatternAndChoices(name, def);
   }

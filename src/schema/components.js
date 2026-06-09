@@ -74,6 +74,20 @@ function fieldNode(fieldKind, props) {
       out.relatedModel = props.relatedModel;
     }
   }
+  if (fieldKind === "manyToMany") {
+    if (typeof props.relatedTable === "string" && props.relatedTable) {
+      out.relatedTable = props.relatedTable;
+    }
+    if (typeof props.relatedModel === "function") {
+      out.relatedModel = props.relatedModel;
+    }
+    if (typeof props.through === "function") {
+      out.through = props.through;
+    }
+    if (typeof props.throughTable === "string" && props.throughTable) {
+      out.throughTable = props.throughTable;
+    }
+  }
   return out;
 }
 
@@ -89,6 +103,14 @@ export function ForeignKey(p) {
   const node = fieldNode("foreignKey", p);
   if (!node.relatedTable && !node.relatedModel) {
     throw new Error(`ForeignKey "${p.name}": relatedTable or relatedModel is required`);
+  }
+  return node;
+}
+
+export function ManyToManyField(p) {
+  const node = fieldNode("manyToMany", p);
+  if (!node.relatedTable && !node.relatedModel) {
+    throw new Error(`ManyToManyField "${p.name}": relatedTable or relatedModel is required`);
   }
   return node;
 }

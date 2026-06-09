@@ -84,6 +84,15 @@ export async function buildCampusSchemaDefine() {
     },
   });
 
+  const Hobby = await Model.define({
+    table: "hobbies",
+    admin: { label: "爱好", display_field: "name", app: "campus", order: 6 },
+    fields: {
+      id: { type: "number", primaryKey: true },
+      name: { type: "char", max_length: 128 },
+    },
+  });
+
   const Student = await Model.define({
     table: "students",
     admin: { label: "学生", display_field: "name", app: "campus", order: 4 },
@@ -102,7 +111,8 @@ export async function buildCampusSchemaDefine() {
         ],
       },
       school: { type: "fk", relatedModel: School },
-      teacher: { type: "fk", relatedModel: Teacher, null: true },
+      teacher: { type: "fk", relatedModel: Teacher, null: true, label: '班主任' },
+      hobbies: { type: "m2m", relatedModel: Hobby, label: '爱好' },
     },
     events: {
       onPost: async ({ models: m, instance }) => {
@@ -143,6 +153,7 @@ export async function buildCampusSchemaDefine() {
     schools: School,
     teachers: Teacher,
     parents: Parent,
+    hobbies: Hobby,
     students: Student,
   };
 

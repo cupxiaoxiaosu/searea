@@ -717,6 +717,37 @@ export default {
       }
       return `${field}_id`;
     },
+    m2mApiIdsKey(field) {
+      return `${field}_ids`;
+    },
+    m2mValues(row, field) {
+      if (row == null) {
+        return [];
+      }
+      if (Array.isArray(row[field])) {
+        return row[field];
+      }
+      const idsKey = this.m2mApiIdsKey(field);
+      return Array.isArray(row[idsKey]) ? row[idsKey] : [];
+    },
+    m2mItemId(item) {
+      return item && typeof item === "object" ? item.id : item;
+    },
+    m2mItemLabel(item, field) {
+      if (item && typeof item === "object") {
+        const target = this.relationTarget(field);
+        const df = target ? this.displayFieldForTargetTable(target) : "";
+        const val = df ? item[df] : undefined;
+        if (val !== undefined && val !== null && val !== "") {
+          return String(val);
+        }
+        if (item.name != null && item.name !== "") return String(item.name);
+        if (item.title != null && item.title !== "") return String(item.title);
+        if (item.id != null) return String(item.id);
+        return JSON.stringify(item);
+      }
+      return item === undefined || item === null ? "" : String(item);
+    },
     displayFieldForTargetTable(targetTableKey) {
       const m = this.models.find((x) => x.key === targetTableKey);
       const f = m && m.admin && m.admin.display_field;
@@ -889,11 +920,7 @@ export default {
       }
     },
     canOpenM2mDetail(row, field) {
-      if (row == null) {
-        return false;
-      }
-      const v = row[field];
-      return Array.isArray(v) && v.length > 0;
+      return this.m2mValues(row, field).length > 0;
     },
     /**
      * 子集 / 多对多弹窗内表格：列顺序与主表一致，用模型 meta 的 label，不用原始字段名当表头。
@@ -933,7 +960,22 @@ export default {
       if (fm.kind === "many_to_many") {
         const v = row[field];
         if (Array.isArray(v)) {
-          return v.length ? v.join(", ") : "";
+          return v.length
+            ? v
+                .map((item) => {
+                  if (item && typeof item === "object") {
+                    const df = fm.target ? this.displayFieldForTargetTable(fm.target) : "";
+                    const val = df ? item[df] : undefined;
+                    if (val !== undefined && val !== null && val !== "") return String(val);
+                    if (item.name != null && item.name !== "") return String(item.name);
+                    if (item.title != null && item.title !== "") return String(item.title);
+                    if (item.id != null) return String(item.id);
+                    return JSON.stringify(item);
+                  }
+                  return String(item);
+                })
+                .join(", ")
+            : "";
         }
         return v === undefined || v === null ? "" : String(v);
       }
@@ -978,7 +1020,8 @@ export default {
       this.relListO2mContext = null;
       const target = this.relationTarget(field);
       this.relListDialogTargetKey = target;
-      const n = row[field].length;
+      const values = this.m2mValues(row, field);
+      const n = values.length;
       this.relListDialogTitle = `${this.columnLabel(field)} · 多对多（${n} 条）`;
       this.adminSetError("");
       this.relListDialogFieldMeta = {};
@@ -986,10 +1029,13 @@ export default {
       this.relListDialogLoading = true;
       this.relListDialogRows = [];
       this.relListDialogColumns = [];
-      const ids = row[field];
       const opts = this.relationOptions[field] || [];
       const map = new Map(opts.map((o) => [String(o.id), o]));
-      this.relListDialogRows = ids.map((id) => {
+      this.relListDialogRows = values.map((item) => {
+        if (item && typeof item === "object") {
+          return { ...item };
+        }
+        const id = this.m2mItemId(item);
         const hit = map.get(String(id));
         if (hit) {
           return { ...hit };
@@ -1015,7 +1061,8 @@ export default {
       }
       this.relListO2mContext = { rev, parentId: String(parentId) };
       this.relListDialogTargetKey = rev.sourceTable;
-      this.relListDialogTitle = `${rev.label} · 子集`;
+      this.relListDialogTitle =
+        rev.kind === "many_to_many" ? `${rev.label} · 多对多` : `${rev.label} · 子集`;
       this.adminSetError("");
       this.relListDialogFieldMeta = {};
       this.relListDialogVisible = true;
@@ -1027,7 +1074,12 @@ export default {
       const url = `${this.adminApiBase}/${rev.sourceTable}?${q.toString()}`;
       Promise.all([requestJson(url), requestJson(adminApiUrl(rev.sourceTable, "meta"))])
         .then(([list, m]) => {
-          const arr = Array.isArray(list) ? list : [];
+          const arr =
+            Array.isArray(list)
+              ? list
+              : list && typeof list === "object" && Array.isArray(list.items)
+                ? list.items
+                : [];
           this.relListDialogFieldMeta = (m && m.fields) || {};
           this.relListDialogRows = arr;
           this.relListDialogColumns = this.buildRelListColumnsFromMeta(this.relListDialogFieldMeta);
@@ -1060,11 +1112,8 @@ export default {
       }
       const fm = this.fieldMeta[field] || {};
       if (fm.kind === "many_to_many") {
-        const v = row[field];
-        if (Array.isArray(v)) {
-          return v.length ? v.join(", ") : "";
-        }
-        return v === undefined || v === null ? "" : String(v);
+        const values = this.m2mValues(row, field);
+        return values.length ? values.map((item) => this.m2mItemLabel(item, field)).join(", ") : "";
       }
       if (this.isFkOrO2oField(field)) {
         const nestedKey = this.fkColumnToNestedKey(field);
@@ -1196,6 +1245,10 @@ export default {
           } else if (value && typeof value === "object" && !Array.isArray(value) && value.id != null) {
             value = value.id;
           }
+        } else if (this.isManyToManyField(field)) {
+          value = this.m2mValues(row, field)
+            .map((item) => this.m2mItemId(item))
+            .filter((id) => id !== undefined && id !== null);
         }
         if (value === undefined || value === null) {
           nextForm[field] = this.isManyToManyField(field)

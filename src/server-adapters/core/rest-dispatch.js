@@ -5,10 +5,11 @@ import {
   buildApiDocs,
   buildResourceMeta,
   coerceFilterValue,
-  fkFieldNames,
   guessModelName,
   adminCatalogFromModels,
   normalizeAdminCatalog,
+  relationFieldNames,
+  writableColumnFieldNames,
 } from "./admin-meta.js";
 import { applySchemaMigration, computeSchemaDiff } from "./schema-diff.js";
 import { createResponseFormatter } from "./response-format.js";
@@ -82,9 +83,72 @@ export function listFiltersFromQuery(query, ModelClass) {
     const s = String(Array.isArray(raw) ? raw.join(",") : raw).trim();
     if (!s.length) continue;
     if (!Object.prototype.hasOwnProperty.call(ModelClass.fields ?? {}, k)) continue;
+    if (ModelClass.fields?.[k]?.type === "m2m") continue;
     where[k] = coerceFilterValue(ModelClass, k, s);
   }
   return where;
+}
+
+function listM2MFiltersFromQuery(query, ModelClass) {
+  const skip = new Set(["page", "pageSize", "expand"]);
+  const out = {};
+  for (const key of Object.keys(query ?? {})) {
+    if (skip.has(key)) continue;
+    const def = ModelClass.fields?.[key];
+    if (def?.type !== "m2m") continue;
+    const raw = query[key];
+    if (raw === undefined || raw === null) continue;
+    const parts = (Array.isArray(raw) ? raw : String(raw).split(","))
+      .map((item) => String(item).trim())
+      .filter(Boolean)
+      .map((item) => Number(item))
+      .filter((item) => Number.isFinite(item));
+    if (parts.length > 0) {
+      out[key] = parts;
+    }
+  }
+  return out;
+}
+
+function intersectIds(current, ids) {
+  const next = [...new Set(ids)];
+  if (current === undefined) {
+    return { $in: next };
+  }
+  if (current && typeof current === "object" && Array.isArray(current.$in)) {
+    const allowed = new Set(current.$in);
+    return { $in: next.filter((id) => allowed.has(id)) };
+  }
+  return { $in: next.includes(current) ? [current] : [] };
+}
+
+async function applyM2MFilters(ModelClass, where, m2mFilters) {
+  let nextWhere = { ...where };
+  for (const [fieldName, targetIds] of Object.entries(m2mFilters)) {
+    const def = ModelClass.fields?.[fieldName];
+    if (def?.type !== "m2m" || !def.throughModel) continue;
+    const throughRows = await def.throughModel.db.select(def.throughModel.table, {
+      [def.targetFieldName]: { $in: targetIds },
+    });
+    const sourceIds = throughRows
+      .map((row) => row[def.sourceFieldName])
+      .filter((id) => id !== undefined && id !== null);
+    nextWhere.id = intersectIds(nextWhere.id, sourceIds);
+  }
+  return nextWhere;
+}
+
+function splitM2MAttrs(ModelClass, attrs) {
+  const direct = {};
+  const m2m = {};
+  for (const [key, value] of Object.entries(attrs ?? {})) {
+    if (ModelClass.fields?.[key]?.type === "m2m") {
+      m2m[key] = value;
+    } else {
+      direct[key] = value;
+    }
+  }
+  return { direct, m2m };
 }
 
 /** @typedef {{ type: 'next' }} RestNext */
@@ -249,12 +313,13 @@ export function createRestDispatch(options = {}) {
         const pageQ = query.page;
         const pageSizeQ = query.pageSize;
         const usePaging = pageQ != null || pageSizeQ != null;
-        const where = listFiltersFromQuery(query, ModelClass);
+        let where = listFiltersFromQuery(query, ModelClass);
+        where = await applyM2MFilters(ModelClass, where, listM2MFiltersFromQuery(query, ModelClass));
         validateFilterWhere(ModelClass, where);
 
         if (usePaging && !query.expand) {
-          const fks = fkFieldNames(ModelClass);
-          if (fks.length) serializeOpts = { fkDepth: 0, expand: fks };
+          const relations = relationFieldNames(ModelClass);
+          if (relations.length) serializeOpts = { fkDepth: 0, expand: relations };
         }
 
         /** @type {unknown} */
@@ -325,14 +390,24 @@ export function createRestDispatch(options = {}) {
         }
         const body = await readJsonBody();
         const attrs = pickWritableAttrs(ModelClass, body);
+        const { direct, m2m } = splitM2MAttrs(ModelClass, attrs);
         if (Object.keys(attrs).length > 0) {
           validateWriteAttrs(ModelClass, attrs);
-          const changes = await ModelClass.db.update(ModelClass.table, { id }, attrs);
-          if (changes === 0) {
-            return { type: "respond", status: 404, body: formatter.wrap(404, { error: "Not found" }) };
+          if (Object.keys(direct).length > 0) {
+            const columnFields = new Set(writableColumnFieldNames(ModelClass));
+            const directColumns = Object.fromEntries(
+              Object.entries(direct).filter(([key]) => columnFields.has(key))
+            );
+            const changes = await ModelClass.db.update(ModelClass.table, { id }, directColumns);
+            if (changes === 0) {
+              return { type: "respond", status: 404, body: formatter.wrap(404, { error: "Not found" }) };
+            }
           }
         }
         const obj = await ModelClass.objects.get({ id });
+        for (const [fieldName, value] of Object.entries(m2m)) {
+          await obj[fieldName].set(Array.isArray(value) ? value : [value]);
+        }
         const patchEv = await runRestEvent(resource, "onPatch", obj);
         return {
           type: "respond",

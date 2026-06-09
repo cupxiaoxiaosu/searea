@@ -15,7 +15,7 @@ export async function defineModel(name, fields, { managers, db } = {}) {
 }
 
 export { default as Model, normalizeExpandList } from "./core/model.js";
-export { Manager, QuerySet, ReverseManager } from "./core/model.js";
+export { Manager, QuerySet, ReverseManager, ManyToManyManager } from "./core/model.js";
 export { createSqlite3Adaptor } from "./db-adapters/sqlite3.js";
 export { createMysqlAdaptor } from "./db-adapters/mysql.js";
 export {
@@ -40,6 +40,7 @@ export {
   DateField,
   DateTimeField,
   ForeignKey,
+  ManyToManyField,
   createElement,
   Fragment,
 } from "./schema/index.js";

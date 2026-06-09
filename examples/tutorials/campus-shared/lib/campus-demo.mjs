@@ -51,6 +51,7 @@ export async function seedCampusDemoOrSkip(models) {
   const School = models.schools;
   const Teacher = models.teachers;
   const Student = models.students;
+  const Hobby = models.hobbies;
 
   const d1 = await District.objects.create({ name: "东城区", code: "DC01" });
   const d2 = await District.objects.create({ name: "河西区", code: "HX02" });
@@ -84,17 +85,21 @@ export async function seedCampusDemoOrSkip(models) {
   const t2 = await Teacher.objects.create({ name: "刘老师", title: "一级教师", school: s1 });
   const t3 = await Teacher.objects.create({ name: "赵老师", title: null, school: s2 });
 
-  await Student.objects.create({ name: "张三", age: 15, school: s1, teacher: t1 });
-  await Student.objects.create({ name: "李四", age: 16, school: s1, teacher: t1 });
-  await Student.objects.create({ name: "王五", age: 14, school: s2, teacher: t3 });
-  await Student.objects.create({ name: "赵六", age: 17, school: s2, teacher: t3 });
-  await Student.objects.create({ name: "钱七", age: 12, school: s3, teacher: null });
+  const basketball = await Hobby.objects.create({ name: "篮球" });
+  const painting = await Hobby.objects.create({ name: "绘画" });
+  const chess = await Hobby.objects.create({ name: "象棋" });
+
+  await Student.objects.create({ name: "张三", age: 15, school: s1, teacher: t1, hobbies: [basketball, chess] });
+  await Student.objects.create({ name: "李四", age: 16, school: s1, teacher: t1, hobbies: [painting] });
+  await Student.objects.create({ name: "王五", age: 14, school: s2, teacher: t3, hobbies: [chess] });
+  await Student.objects.create({ name: "赵六", age: 17, school: s2, teacher: t3, hobbies: [basketball] });
+  await Student.objects.create({ name: "钱七", age: 12, school: s3, teacher: null, hobbies: [painting, chess] });
   await Student.objects.create({ name: "孙八", age: 13, school: s3, teacher: null });
-  await Student.objects.create({ name: "周九", age: 16, school: s4, teacher: t2 });
-  await Student.objects.create({ name: "吴十", age: 15, school: s4, teacher: t2 });
+  await Student.objects.create({ name: "周九", age: 16, school: s4, teacher: t2, hobbies: [basketball] });
+  await Student.objects.create({ name: "吴十", age: 15, school: s4, teacher: t2, hobbies: [painting] });
 }
 
-const CAMPUS_TABLES = ["districts", "schools", "teachers", "parents", "students"];
+const CAMPUS_TABLES = ["districts", "schools", "teachers", "parents", "hobbies", "students"];
 
 export { CAMPUS_TABLES };
 

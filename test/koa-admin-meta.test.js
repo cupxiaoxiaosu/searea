@@ -218,3 +218,137 @@ test("Admin meta: pattern and choices on fields", async () => {
     await db.close?.();
   }
 });
+
+test("Admin meta: m2m fields expose many_to_many metadata with generated through table", async () => {
+  const db = createSqlite3Adaptor({ filename: ":memory:" });
+  Model.useDB(db);
+
+  const Hobby = await Model.define({
+    table: "hobbies",
+    fields: {
+      id: { type: "number", primaryKey: true },
+      name: { type: "char", max_length: 255 },
+    },
+  });
+  const Student = await Model.define({
+    table: "students",
+    fields: {
+      id: { type: "number", primaryKey: true },
+      name: { type: "char", max_length: 255 },
+      hobbies: { type: "m2m", relatedModel: Hobby, label: "爱好" },
+    },
+  });
+
+  const app = new Koa();
+  app.use(bodyParser());
+  app.use(await createKoaRestMiddleware({ backendPath: "/api", models: { students: Student, hobbies: Hobby } }));
+
+  const { server, port } = await listen(app);
+  try {
+    const res = await req(port, "/api/students/meta");
+    assert.equal(res.status, 200);
+    assert.equal(res.body.fields.hobbies.kind, "many_to_many");
+    assert.equal(res.body.fields.hobbies.target, "hobbies");
+    assert.equal(res.body.fields.hobbies.through, "student_hobbies");
+    assert.equal(res.body.fields.hobbies.label, "爱好");
+  } finally {
+    server.close();
+    await db.close?.();
+  }
+});
+
+test("Admin list: paged responses expand m2m fields for table rendering", async () => {
+  const db = createSqlite3Adaptor({ filename: ":memory:" });
+  Model.useDB(db);
+
+  const Hobby = await Model.define({
+    table: "hobbies",
+    fields: {
+      id: { type: "number", primaryKey: true },
+      name: { type: "char", max_length: 255 },
+    },
+  });
+  const Student = await Model.define({
+    table: "students",
+    fields: {
+      id: { type: "number", primaryKey: true },
+      name: { type: "char", max_length: 255 },
+      hobbies: { type: "m2m", relatedModel: Hobby },
+    },
+  });
+  await db.ensureTable(Hobby);
+  await db.ensureTable(Student);
+
+  const reading = await Hobby.objects.create({ name: "Reading" });
+  const chess = await Hobby.objects.create({ name: "Chess" });
+  const alice = await Student.objects.create({ name: "Alice" });
+  await alice.hobbies.add(reading, chess);
+
+  const app = new Koa();
+  app.use(bodyParser());
+  app.use(await createKoaRestMiddleware({ backendPath: "/api", models: { students: Student, hobbies: Hobby } }));
+
+  const { server, port } = await listen(app);
+  try {
+    const res = await req(port, "/api/students?page=1&pageSize=10");
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.body.items));
+    assert.ok(Array.isArray(res.body.items[0].hobbies));
+    assert.deepEqual(
+      res.body.items[0].hobbies.map((h) => h.name).sort(),
+      ["Chess", "Reading"]
+    );
+  } finally {
+    server.close();
+    await db.close?.();
+  }
+});
+
+test("Admin list: m2m query params filter through the generated relation table", async () => {
+  const db = createSqlite3Adaptor({ filename: ":memory:" });
+  Model.useDB(db);
+
+  const Hobby = await Model.define({
+    table: "hobbies",
+    fields: {
+      id: { type: "number", primaryKey: true },
+      name: { type: "char", max_length: 255 },
+    },
+  });
+  const Student = await Model.define({
+    table: "students",
+    fields: {
+      id: { type: "number", primaryKey: true },
+      name: { type: "char", max_length: 255 },
+      hobbies: { type: "m2m", relatedModel: Hobby },
+    },
+  });
+  await db.ensureTable(Hobby);
+  await db.ensureTable(Student);
+
+  const reading = await Hobby.objects.create({ name: "Reading" });
+  const chess = await Hobby.objects.create({ name: "Chess" });
+  const alice = await Student.objects.create({ name: "Alice" });
+  const bob = await Student.objects.create({ name: "Bob" });
+  const cathy = await Student.objects.create({ name: "Cathy" });
+  await alice.hobbies.add(reading, chess);
+  await bob.hobbies.add(chess);
+  await cathy.hobbies.add(reading);
+
+  const app = new Koa();
+  app.use(bodyParser());
+  app.use(await createKoaRestMiddleware({ backendPath: "/api", models: { students: Student, hobbies: Hobby } }));
+
+  const { server, port } = await listen(app);
+  try {
+    const res = await req(port, `/api/students?hobbies=${reading.id}`);
+    assert.equal(res.status, 200);
+    assert.deepEqual(
+      res.body.map((student) => student.name).sort(),
+      ["Alice", "Cathy"]
+    );
+  } finally {
+    server.close();
+    await db.close?.();
+  }
+});
