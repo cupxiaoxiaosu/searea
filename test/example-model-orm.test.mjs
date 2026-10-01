@@ -631,11 +631,11 @@ test("campus define: QuerySet.update/delete 需纯 filter", async () => {
 
     await assert.rejects(
       () => qs.orderBy("-age").update({ sex: "X" }),
-      /only supports plain filter\(\) conditions/
+      /orderBy\/limit\/offset are not allowed/
     );
     await assert.rejects(
-      () => qs.exclude({ age: { $lt: 18 } }).delete(),
-      /only supports plain filter\(\) conditions/
+      () => qs.orderBy("-age").delete(),
+      /orderBy\/limit\/offset are not allowed/
     );
   });
 });

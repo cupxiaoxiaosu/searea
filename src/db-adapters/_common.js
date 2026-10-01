@@ -9,49 +9,83 @@ export function buildWhere(quoteIdent, where = {}) {
   const clauses = [];
   const params = [];
 
-  for (const [key, value] of Object.entries(where ?? {})) {
+  function buildCondition(key, value) {
     const col = quoteIdent(key);
     if (value === null) {
-      clauses.push(`${col} IS NULL`);
-      continue;
+      return { sql: `${col} IS NULL`, params: [] };
     }
 
     if (value && typeof value === "object" && !Array.isArray(value)) {
+      if ("$ne" in value) {
+        if (value.$ne === null) {
+          return { sql: `${col} IS NOT NULL`, params: [] };
+        }
+        return { sql: `${col} != ?`, params: [value.$ne] };
+      }
+      if ("$nin" in value) {
+        const arr = value.$nin;
+        if (!Array.isArray(arr) || arr.length === 0) {
+          return { sql: "1", params: [] };
+        }
+        const qs = arr.map(() => "?").join(", ");
+        return { sql: `${col} NOT IN (${qs})`, params: arr };
+      }
       if ("$in" in value) {
         const arr = value.$in;
         if (!Array.isArray(arr) || arr.length === 0) {
-          clauses.push("0");
-          continue;
+          return { sql: "0", params: [] };
         }
         const qs = arr.map(() => "?").join(", ");
-        clauses.push(`${col} IN (${qs})`);
-        params.push(...arr);
-        continue;
+        return { sql: `${col} IN (${qs})`, params: arr };
       }
       if ("$gte" in value) {
-        clauses.push(`${col} >= ?`);
-        params.push(value.$gte);
-        continue;
+        return { sql: `${col} >= ?`, params: [value.$gte] };
       }
       if ("$gt" in value) {
-        clauses.push(`${col} > ?`);
-        params.push(value.$gt);
-        continue;
+        return { sql: `${col} > ?`, params: [value.$gt] };
       }
       if ("$lte" in value) {
-        clauses.push(`${col} <= ?`);
-        params.push(value.$lte);
-        continue;
+        return { sql: `${col} <= ?`, params: [value.$lte] };
       }
       if ("$lt" in value) {
-        clauses.push(`${col} < ?`);
-        params.push(value.$lt);
-        continue;
+        return { sql: `${col} < ?`, params: [value.$lt] };
       }
     }
 
-    clauses.push(`${col} = ?`);
-    params.push(value);
+    return { sql: `${col} = ?`, params: [value] };
+  }
+
+  for (const [key, value] of Object.entries(where ?? {})) {
+    if (key === "$or" && Array.isArray(value)) {
+      const orParts = value.map((sub) => {
+        const subClauses = [];
+        for (const [sk, sv] of Object.entries(sub)) {
+          const c = buildCondition(sk, sv);
+          subClauses.push(c.sql);
+          params.push(...c.params);
+        }
+        return `(${subClauses.join(" AND ")})`;
+      });
+      if (orParts.length > 0) {
+        clauses.push(`(${orParts.join(" OR ")})`);
+      }
+      continue;
+    }
+
+    if (key === "$and" && Array.isArray(value)) {
+      for (const sub of value) {
+        for (const [sk, sv] of Object.entries(sub)) {
+          const c = buildCondition(sk, sv);
+          clauses.push(c.sql);
+          params.push(...c.params);
+        }
+      }
+      continue;
+    }
+
+    const c = buildCondition(key, value);
+    clauses.push(c.sql);
+    params.push(...c.params);
   }
 
   return {

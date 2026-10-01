@@ -225,17 +225,24 @@ class Model {
     for (const [k, def] of Object.entries(fields)) {
       if (def?.type === "fk") {
         const id = instance[fkIds]?.[k];
+        const prefetched = instance[`_prefetched_${k}`];
 
         if (effectiveExpand != null) {
           if (!effectiveExpand.has(k)) {
             if (id !== undefined) out[`${k}_id`] = id;
             continue;
           }
-          if (id === undefined) {
+          if (id === undefined && !prefetched) {
             continue;
           }
           if (id === null) {
             out[k] = null;
+            continue;
+          }
+          // 使用 selectRelated 预加载的对象，不再查库
+          if (prefetched) {
+            const Related = def.relatedModel;
+            out[k] = await Related.serialize(prefetched, { fkDepth: 0, expand: expandCandidates });
             continue;
           }
           const Related = def.relatedModel;
@@ -248,14 +255,19 @@ class Model {
           continue;
         }
 
-        if (fkDepth > 0 && id != null) {
-          const Related = def.relatedModel;
-          const rel = await getRelatedOrNull(Related, id);
-          if (rel == null) {
-            out[`${k}_id`] = id;
-            continue;
+        if (fkDepth > 0 && (id != null || prefetched)) {
+          if (prefetched) {
+            const Related = def.relatedModel;
+            out[k] = await Related.serialize(prefetched, { fkDepth: fkDepth - 1 });
+          } else {
+            const Related = def.relatedModel;
+            const rel = await getRelatedOrNull(Related, id);
+            if (rel == null) {
+              out[`${k}_id`] = id;
+              continue;
+            }
+            out[k] = await Related.serialize(rel, { fkDepth: fkDepth - 1 });
           }
-          out[k] = await Related.serialize(rel, { fkDepth: fkDepth - 1 });
         } else if (id !== undefined) {
           out[`${k}_id`] = id;
         }

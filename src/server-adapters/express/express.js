@@ -6,6 +6,7 @@ import { createRestDispatch } from "../core/rest-dispatch.js";
 import { createResponseFormatter } from "../core/response-format.js";
 import { isSeareaMountedPath } from "../searea-mounted-path.js";
 import { tryServeFrontendDistExpress } from "./serve-frontend.js";
+import { createAdminAuth } from "./admin-auth.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -36,6 +37,7 @@ function readReqBodyRaw(req) {
  *   frontendPath?: string,
  *   serveFrontendDist?: boolean,
  *   authorize?: (req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) => unknown,
+ *   adminAuth?: { username: string, password: string, secret: string, expiresIn?: number, loginPath?: string, excludePrefixes?: string[], cookieName?: string },
  * }} [options]
  */
 export async function createExpressRestMiddleware(options = {}) {
@@ -58,7 +60,16 @@ export async function createExpressRestMiddleware(options = {}) {
     throw new Error("createExpressRestMiddleware: pass models or schema");
   }
 
-  const authorize = options.authorize;
+  // adminAuth: 内置登录页 + 鉴权闸门（与 authorize 互斥，adminAuth 优先）
+  let authorize = options.authorize;
+  let adminAuthHandler = null;
+  let adminLoginPath = null;
+  if (options.adminAuth) {
+    const auth = createAdminAuth({ ...options.adminAuth, adminPath });
+    authorize = auth.authorize;
+    adminAuthHandler = auth.handleLoginRoute;
+    adminLoginPath = auth.loginPath;
+  }
   if (authorize != null && typeof authorize !== "function") {
     throw new Error("createExpressRestMiddleware: authorize must be an Express middleware function");
   }
@@ -76,6 +87,17 @@ export async function createExpressRestMiddleware(options = {}) {
 
   async function seareaExpressRest(req, res, outerNext) {
     const pathname = req.path || "/";
+
+    // adminAuth 登录路由拦截（不受鉴权保护）
+    if (adminAuthHandler && (pathname === adminLoginPath || pathname === adminLoginPath + "/")) {
+      try {
+        const handled = await adminAuthHandler(req, res);
+        if (handled) return;
+      } catch (e) {
+        outerNext(e);
+        return;
+      }
+    }
 
     async function run() {
       async function readJsonBody() {

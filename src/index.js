@@ -27,6 +27,7 @@ export {
   tryServeFrontendDistExpress,
   isSeareaMountedPath,
   createResponseFormatter,
+  createAdminAuth,
 } from "./server-adapters/index.js";
 
 export {

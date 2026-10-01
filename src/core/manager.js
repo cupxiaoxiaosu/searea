@@ -178,6 +178,22 @@ export class Manager {
     return new QuerySet(this.modelClass, normalizeWhereForModel(this.modelClass, where));
   }
 
+  exclude(where = {}) {
+    return this.all().exclude(where);
+  }
+
+  orderBy(...fields) {
+    return this.all().orderBy(...fields);
+  }
+
+  /**
+   * Django: Model.objects.select_related('fk1', 'fk2')
+   * 通过 SQL JOIN 一次性加载 FK 关联对象，消除 N+1 查询。
+   */
+  selectRelated(...fields) {
+    return this.all().selectRelated(...fields);
+  }
+
   /** `Student.objects.values()` → same as `.all().values()` */
   values(opts = {}) {
     return this.all().values(opts);

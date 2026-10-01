@@ -359,7 +359,15 @@ export function createRestDispatch(options = {}) {
         if (!Number.isFinite(id)) {
           return { type: "respond", status: 400, body: formatter.wrap(400, { error: "Invalid id" }) };
         }
-        const obj = await ModelClass.objects.get({ id });
+        let obj = null;
+        try {
+          obj = await ModelClass.objects.get({ id });
+        } catch (e) {
+          if (e?.message !== "DoesNotExist") throw e;
+        }
+        if (!obj) {
+          return { type: "respond", status: 404, body: formatter.wrap(404, { error: "Not found" }) };
+        }
         const getEv = await runRestEvent(resource, "onGetItem", obj);
         return {
           type: "respond",

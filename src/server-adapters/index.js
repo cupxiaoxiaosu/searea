@@ -3,6 +3,7 @@ export { createServeFrontendDistMiddleware } from "./koa/serve-frontend.js";
 
 export { createExpressRestMiddleware } from "./express/express.js";
 export { tryServeFrontendDistExpress } from "./express/serve-frontend.js";
+export { createAdminAuth } from "./express/admin-auth.js";
 
 export {
   createEggSeareaRestMiddleware,

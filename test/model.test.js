@@ -634,6 +634,234 @@ test("QuerySet exposes count, exclude, orderBy, update, and delete", async () =>
   });
 });
 
+// ============ Manager.exclude / Manager.orderBy ============
+
+test("Manager.exclude: exclude scalar value", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    // exclude id=1 → 返回 id != 1 的学生
+    const qs = models.Student.objects.exclude({ id: 1 });
+    const rows = await qs.values({ fkDepth: 0 });
+    assert.equal(rows.length, 3);
+    assert.ok(rows.every((r) => r.id !== 1));
+  });
+});
+
+test("Manager.exclude: exclude null field (IS NOT NULL)", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    // student2.teacher = null，exclude { teacher: null } → 返回 teacher 非空的
+    const qs = models.Student.objects.exclude({ teacher: null });
+    const rows = await qs.values({ fkDepth: 0 });
+    assert.equal(rows.length, 3);
+    assert.ok(rows.every((r) => r.teacher !== null));
+  });
+});
+
+test("Manager.exclude: exclude $in → NOT IN", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    const qs = models.Student.objects.exclude({ id: { $in: [1, 2] } });
+    const rows = await qs.values({ fkDepth: 0 });
+    assert.equal(rows.length, 2);
+    assert.ok(rows.every((r) => r.id > 2));
+  });
+});
+
+test("Manager.exclude: exclude $gte → $lt (取反)", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    // exclude age >= 18 → 返回 age < 18 的学生（学生2:17, 学生4:16）
+    const qs = models.Student.objects.exclude({ age: { $gte: 18 } });
+    const rows = await qs.values({ fkDepth: 0 });
+    assert.equal(rows.length, 2);
+    assert.ok(rows.every((r) => r.age < 18));
+  });
+});
+
+test("Manager.exclude: chained filter + exclude", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    // filter school=1, exclude age >= 18 → school1 中 age < 18 的（无，学生1和3都 >= 18）
+    const qs = models.Student.objects.filter({ school: 1 }).exclude({ age: { $gte: 18 } });
+    const rows = await qs.values({ fkDepth: 0 });
+    assert.equal(rows.length, 0);
+  });
+});
+
+test("Manager.exclude: exclude count matches SQL COUNT", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    const total = await models.Student.objects.all().count();
+    const excluded = await models.Student.objects.exclude({ id: 1 }).count();
+    assert.equal(excluded, total - 1);
+  });
+});
+
+test("Manager.orderBy: ascending", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    const rows = await models.Student.objects.orderBy("age").values({ fkDepth: 0 });
+    assert.equal(rows.length, 4);
+    assert.ok(rows[0].age <= rows[1].age);
+    assert.ok(rows[1].age <= rows[2].age);
+    assert.ok(rows[2].age <= rows[3].age);
+  });
+});
+
+test("Manager.orderBy: descending (-field)", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    const rows = await models.Student.objects.orderBy("-age").values({ fkDepth: 0 });
+    assert.equal(rows.length, 4);
+    assert.ok(rows[0].age >= rows[1].age);
+    assert.ok(rows[1].age >= rows[2].age);
+    assert.ok(rows[2].age >= rows[3].age);
+  });
+});
+
+test("Manager.orderBy: combined with exclude", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    // exclude id=1, orderBy -age
+    const rows = await models.Student.objects.exclude({ id: 1 }).orderBy("-age").values({ fkDepth: 0 });
+    assert.equal(rows.length, 3);
+    assert.ok(rows.every((r) => r.id !== 1));
+    assert.ok(rows[0].age >= rows[1].age);
+  });
+});
+
+test("Manager.orderBy: combined with filter and pagination", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    const result = await models.Student.objects.filter({ age: { $gte: 17 } }).orderBy("-age").page(1, 2);
+    assert.equal(result.total, 3);
+    assert.equal(result.list.length, 2);
+    assert.ok(result.list[0].age >= result.list[1].age);
+  });
+});
+
+// ============ selectRelated (JOIN) ============
+
+test("selectRelated: basic JOIN — FK object is populated without N+1", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    const seed = await seedSchoolData(models);
+
+    // selectRelated('school') → 1 次 SQL JOIN，不再逐条查 school
+    const rows = await models.Student.objects
+      .selectRelated("school")
+      .filter({ id: seed.student1.id })
+      .values({ fkDepth: 1 });
+
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].school.id, seed.school1.id);
+    assert.equal(rows[0].school.name, "学校1");
+  });
+});
+
+test("selectRelated: multiple FK JOIN in one query", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    const seed = await seedSchoolData(models);
+
+    const rows = await models.Student.objects
+      .selectRelated("school", "teacher")
+      .filter({ id: seed.student1.id })
+      .values({ fkDepth: 1 });
+
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].school.name, "学校1");
+    assert.equal(rows[0].teacher.name, "老师1");
+  });
+});
+
+test("selectRelated: works with orderBy", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    const rows = await models.Student.objects
+      .selectRelated("school")
+      .orderBy("-age")
+      .values({ fkDepth: 1 });
+
+    assert.equal(rows.length, 4);
+    // 每条都有 school 对象（不为 null）
+    assert.ok(rows.every((r) => r.school != null));
+    // 按 age 降序
+    assert.ok(rows[0].age >= rows[1].age);
+  });
+});
+
+test("selectRelated: works with exclude (null FK)", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    // student2.teacher = null，selectRelated + exclude teacher=null
+    const rows = await models.Student.objects
+      .selectRelated("teacher")
+      .exclude({ teacher: null })
+      .values({ fkDepth: 1 });
+
+    assert.equal(rows.length, 3);
+    assert.ok(rows.every((r) => r.teacher != null));
+  });
+});
+
+test("selectRelated: works with page()", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    await seedSchoolData(models);
+
+    const result = await models.Student.objects
+      .selectRelated("school")
+      .orderBy("-id")
+      .page(1, 2);
+
+    assert.equal(result.total, 4);
+    assert.equal(result.list.length, 2);
+    assert.ok(result.list.every((r) => r.school != null));
+  });
+});
+
+test("selectRelated: returns model instances with FK accessible", async () => {
+  await withDb(async (db) => {
+    const models = await defineSchoolModels(db);
+    const seed = await seedSchoolData(models);
+
+    const students = await models.Student.objects
+      .selectRelated("school")
+      .filter({ id: seed.student1.id });
+
+    assert.equal(students.length, 1);
+    const school = await students[0].school; // getter 应返回预加载对象（Promise）
+    assert.equal(school.id, seed.school1.id);
+    assert.equal(school.name, "学校1");
+  });
+});
+
 test("QuerySet update/delete reject non-filter modifiers to keep single-SQL mutations", async () => {
   await withDb(async (db) => {
     const models = await defineSchoolModels(db);
@@ -642,11 +870,11 @@ test("QuerySet update/delete reject non-filter modifiers to keep single-SQL muta
 
     await assert.rejects(
       () => qs.orderBy("-age").update({ sex: "X" }),
-      /only supports plain filter\(\) conditions/
+      /orderBy\/limit\/offset are not allowed/
     );
     await assert.rejects(
-      () => qs.exclude({ age: { $lt: 18 } }).delete(),
-      /only supports plain filter\(\) conditions/
+      () => qs.orderBy("-age").delete(),
+      /orderBy\/limit\/offset are not allowed/
     );
   });
 });

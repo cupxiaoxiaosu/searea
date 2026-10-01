@@ -90,7 +90,7 @@ export function buildReverseRelations(resourceKey, ModelClass, modelsMap, catalo
         out.push({
           sourceTable: otherKey,
           fkField: fname,
-          label: catalogByKey[otherKey]?.admin?.label ?? otherKey,
+          label: fdef.label ?? catalogByKey[otherKey]?.admin?.label ?? otherKey,
         });
       }
       if (fdef?.type === "m2m" && fdef.relatedModel === ModelClass) {

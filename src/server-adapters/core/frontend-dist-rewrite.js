@@ -30,12 +30,20 @@ export function rewriteRootBuiltIndexHtml(html, adminPath, extraScript) {
 /**
  * @param {string} js
  * @param {string} adminPath
+ * @param {string} [backendPath] - 当与构建时默认值 "/api" 不同时，运行时改写 JS 中的 API 前缀
  */
-export function rewriteRootBuiltAssetJs(js, adminPath) {
+export function rewriteRootBuiltAssetJs(js, adminPath, backendPath) {
   const prefix = normalizeAdminPrefix(adminPath);
-  if (!prefix) return js;
-  const base = `${prefix}/`;
-  return js.replace(/base:"\/"/g, `base:"${base}"`).replace(/base:'\/'/g, `base:'${base}'`);
+  let result = js;
+  if (prefix) {
+    const base = `${prefix}/`;
+    result = result.replace(/base:"\/"/g, `base:"${base}"`).replace(/base:'\/'/g, `base:'${base}'`);
+  }
+  // 运行时改写 API 前缀（构建时默认 "/api"）
+  if (backendPath && backendPath !== "/api") {
+    result = result.replace(/="\/api"/g, `="${backendPath}"`);
+  }
+  return result;
 }
 
 /**
@@ -43,14 +51,15 @@ export function rewriteRootBuiltAssetJs(js, adminPath) {
  * @param {string} adminPath
  * @param {string} filePath absolute or relative path for kind detection
  * @param {string} [extraScript] — injected before </body> when serving index.html
+ * @param {string} [backendPath] — runtime rewrite API prefix in JS
  */
-export function rewriteRootBuiltFrontendFile(content, adminPath, filePath, extraScript) {
+export function rewriteRootBuiltFrontendFile(content, adminPath, filePath, extraScript, backendPath) {
   const name = String(filePath).replace(/\\/g, "/");
   if (name.endsWith("/index.html") || name.endsWith("index.html")) {
     return rewriteRootBuiltIndexHtml(content, adminPath, extraScript);
   }
   if (/\/assets\/.*\.js$/i.test(name)) {
-    return rewriteRootBuiltAssetJs(content, adminPath);
+    return rewriteRootBuiltAssetJs(content, adminPath, backendPath);
   }
   return content;
 }

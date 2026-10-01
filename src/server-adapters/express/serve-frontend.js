@@ -55,11 +55,12 @@ export function tryServeFrontendDistExpress(req, res, opts) {
   const fileToSend =
     fs.existsSync(abs) && fs.statSync(abs).isFile() ? abs : path.join(root, "index.html");
 
-  if (base) {
+  const needsRewrite = Boolean(base) || (backendPath && backendPath !== "/api") || Boolean(extraScript);
+  if (needsRewrite) {
     const ext = path.extname(fileToSend).toLowerCase();
     if (ext === ".html" || ext === ".js") {
       const raw = fs.readFileSync(fileToSend, "utf8");
-      const body = rewriteRootBuiltFrontendFile(raw, base, fileToSend, extraScript);
+      const body = rewriteRootBuiltFrontendFile(raw, base, fileToSend, extraScript, backendPath);
       if (ext === ".html") {
         res.type("html");
       } else {
@@ -68,12 +69,6 @@ export function tryServeFrontendDistExpress(req, res, opts) {
       res.send(body);
       return Promise.resolve(true);
     }
-  } else if (extraScript && fileToSend.endsWith("index.html")) {
-    const raw = fs.readFileSync(fileToSend, "utf8");
-    const body = rewriteRootBuiltFrontendFile(raw, "", fileToSend, extraScript);
-    res.type("html");
-    res.send(body);
-    return Promise.resolve(true);
   }
 
   return new Promise((resolve, reject) => {
