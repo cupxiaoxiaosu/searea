@@ -79,6 +79,22 @@ function createPoolOptions(opts) {
 }
 
 /**
+ * 将写入参数转换为 MySQL 兼容格式：
+ * - Date 对象 / ISO 8601 字符串 → 'YYYY-MM-DD HH:mm:ss'
+ *   mysql2 能处理 Date 对象，此处统一兜底 ISO 字符串，避免 ER_TRUNCATED_WRONG_VALUE
+ */
+function toMysqlValue(v) {
+  if (v instanceof Date) {
+    return v.toISOString().slice(0, 19).replace("T", " ");
+  }
+  if (typeof v === "string") {
+    const m = v.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})/);
+    if (m) return `${m[1]} ${m[2]}`;
+  }
+  return v;
+}
+
+/**
  * MySQL adaptor (mysql2/promise) with the same API shape as `createSqlite3Adaptor`.
  *
  * 首次执行任意 SQL 时会建立连接池；若未设置 **`ensureDatabase: false`**，会先对 URL / `database`
@@ -116,7 +132,7 @@ export function createMysqlAdaptor(opts = {}) {
   async function query(sql, params = []) {
     log?.(sql, params);
     const pool = await getPool();
-    const [rows] = await pool.query(sql, params);
+    const [rows] = await pool.query(sql, params.map(toMysqlValue));
     return rows;
   }
 

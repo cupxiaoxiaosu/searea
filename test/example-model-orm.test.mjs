@@ -569,12 +569,13 @@ test("campus define: filter by related instance; filter({ teacher: null })", asy
   });
 });
 
-test("campus define: get DoesNotExist; MultipleObjectsReturned", async () => {
+test("campus define: get returns null when not found; MultipleObjectsReturned", async () => {
   await withCampusDb(async (_db, models) => {
     const rows = await seedCampus(models);
     const { students: Student } = models;
 
-    await assert.rejects(() => Student.objects.get({ id: 999 }), /DoesNotExist/);
+    const notFound = await Student.objects.get({ id: 999 });
+    assert.equal(notFound, null);
     await assert.rejects(() => Student.objects.get({ school: rows.school1.id }), /MultipleObjectsReturned/);
   });
 });

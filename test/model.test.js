@@ -550,12 +550,13 @@ test("custom managers can narrow default query behavior without replacing object
   });
 });
 
-test("objects.get throws DoesNotExist when no row matches", async () => {
+test("objects.get returns null when no row matches", async () => {
   await withDb(async (db) => {
     const models = await defineSchoolModels(db);
     await seedSchoolData(models);
 
-    await assert.rejects(() => models.Student.objects.get({ id: 999 }), /DoesNotExist/);
+    const result = await models.Student.objects.get({ id: 999 });
+    assert.equal(result, null);
   });
 });
 

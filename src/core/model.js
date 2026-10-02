@@ -214,12 +214,7 @@ class Model {
     const out = {};
 
     async function getRelatedOrNull(Related, id) {
-      try {
-        return await Related.objects.get({ id });
-      } catch (e) {
-        if (e?.message === "DoesNotExist") return null;
-        throw e;
-      }
+      return Related.objects.get({ id });
     }
 
     for (const [k, def] of Object.entries(fields)) {

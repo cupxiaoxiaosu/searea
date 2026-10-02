@@ -360,11 +360,7 @@ export function createRestDispatch(options = {}) {
           return { type: "respond", status: 400, body: formatter.wrap(400, { error: "Invalid id" }) };
         }
         let obj = null;
-        try {
-          obj = await ModelClass.objects.get({ id });
-        } catch (e) {
-          if (e?.message !== "DoesNotExist") throw e;
-        }
+        obj = await ModelClass.objects.get({ id });
         if (!obj) {
           return { type: "respond", status: 404, body: formatter.wrap(404, { error: "Not found" }) };
         }
@@ -413,6 +409,9 @@ export function createRestDispatch(options = {}) {
           }
         }
         const obj = await ModelClass.objects.get({ id });
+        if (!obj) {
+          return { type: "respond", status: 404, body: formatter.wrap(404, { error: "Not found" }) };
+        }
         for (const [fieldName, value] of Object.entries(m2m)) {
           await obj[fieldName].set(Array.isArray(value) ? value : [value]);
         }
@@ -430,11 +429,7 @@ export function createRestDispatch(options = {}) {
           return { type: "respond", status: 400, body: formatter.wrap(400, { error: "Invalid id" }) };
         }
         let obj = null;
-        try {
-          obj = await ModelClass.objects.get({ id });
-        } catch (e) {
-          if (e?.message !== "DoesNotExist") throw e;
-        }
+        obj = await ModelClass.objects.get({ id });
         if (!obj) {
           return { type: "respond", status: 404, body: formatter.wrap(404, { error: "Not found" }) };
         }
@@ -462,9 +457,6 @@ export function createRestDispatch(options = {}) {
           status: 400,
           body: formatter.wrap(400, { error: "validation_failed", details: e.details }),
         };
-      }
-      if (e.message === "DoesNotExist") {
-        return { type: "respond", status: 404, body: formatter.wrap(404, { error: "Not found" }) };
       }
       if (e.status === 400) {
         return { type: "respond", status: 400, body: formatter.wrap(400, { error: e.message }) };

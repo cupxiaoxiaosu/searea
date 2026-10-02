@@ -237,7 +237,7 @@ export class Manager {
   async get(where = {}) {
     const normalizedWhere = normalizeWhereForModel(this.modelClass, where);
     const rows = await this.modelClass.db.select(this.modelClass.table, normalizedWhere, { limit: 2 });
-    if (rows.length === 0) throw new Error("DoesNotExist");
+    if (rows.length === 0) return null;
     if (rows.length > 1) throw new Error("MultipleObjectsReturned");
     return new this.modelClass(rows[0]);
   }

@@ -1,6 +1,6 @@
 {
   "name": "searea",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Searea — Django-inspired ORM for Node.js with JSX schema, SQLite/MySQL adapters, and Koa helpers. Every stream flows to the sea.",
   "license": "MIT",
   "type": "module",
