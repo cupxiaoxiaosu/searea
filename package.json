@@ -71,14 +71,14 @@
     "examples/tutorials/egg-campus/start.mjs"
   ],
   "dependencies": {
-    "mysql2": "^3.22.3",
-    "sqlite3": "^5.1.7"
-  },
-  "devDependencies": {
     "express": "^4.22.2",
     "koa": "^2.15.4",
     "koa-bodyparser": "^4.4.1",
     "koa-send": "^5.0.1",
+    "mysql2": "^3.22.3",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
     "tsx": "^4.21.0"
   },
   "scripts": {
