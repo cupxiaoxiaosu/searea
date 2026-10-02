@@ -65,7 +65,8 @@ export async function createExpressRestMiddleware(options = {}) {
   let adminAuthHandler = null;
   let adminLoginPath = null;
   if (options.adminAuth) {
-    const auth = createAdminAuth({ ...options.adminAuth, adminPath });
+    const defaultLoginPath = `${adminPath}/login`;
+    const auth = createAdminAuth({ loginPath: defaultLoginPath, ...options.adminAuth, adminPath });
     authorize = auth.authorize;
     adminAuthHandler = auth.handleLoginRoute;
     adminLoginPath = auth.loginPath;
